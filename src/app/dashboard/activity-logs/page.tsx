@@ -1,15 +1,7 @@
 "use client";
 
-import { useAppContext } from "../../../components/AppContext";
-import ActivityLogSection from "../sections/ActivityLogSection";
+import ActivityLogs from "@/components/Pages/ActivityLogs";
 
 export default function ActivityLogsPage() {
-  const { timePeriod } = useAppContext();
-
-  return (
-    <ActivityLogSection
-      selectedTimePeriod={timePeriod}
-      setActiveSection={() => {}}
-    />
-  );
+  return <ActivityLogs />;
 }

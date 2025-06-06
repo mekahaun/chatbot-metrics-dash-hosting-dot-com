@@ -1,15 +1,5 @@
-"use client";
-
-import { useAppContext } from "../../../components/AppContext";
-import KnowledgeSyncSection from "../sections/KnowledgeSyncSection";
+import KnowledgeSync from "@/components/Pages/KnowledgeSync";
 
 export default function KnowledgeSyncPage() {
-  const { timePeriod } = useAppContext();
-
-  return (
-    <KnowledgeSyncSection
-      selectedTimePeriod={timePeriod}
-      setActiveSection={() => {}}
-    />
-  );
+  return <KnowledgeSync />;
 }

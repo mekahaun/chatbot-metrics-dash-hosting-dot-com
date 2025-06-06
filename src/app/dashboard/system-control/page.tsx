@@ -1,15 +1,5 @@
-"use client";
-
-import { useAppContext } from "../../../components/AppContext";
-import SystemControlSection from "../sections/SystemControlSection";
+import SystemControlSection from "../../../components/Pages/SystemControl";
 
 export default function SystemControlPage() {
-  const { timePeriod } = useAppContext();
-
-  return (
-    <SystemControlSection
-      selectedTimePeriod={timePeriod}
-      setActiveSection={() => {}}
-    />
-  );
+  return <SystemControlSection />;
 }

@@ -1,11 +1,7 @@
 "use client";
 
-import { useAppContext } from "@/components/context/AppContext";
 import ErrorSection from "@/components/Shared/Common/Errors/ErrorSection";
 import LoadingSection from "@/components/Shared/Common/Loaders/LoadingSection";
-import envs from "@/utils/getEnv";
-import getFullUrl from "@/utils/getFullUrl";
-import { format } from "date-fns";
 import {
   ArrowDown,
   ArrowUp,
@@ -14,7 +10,6 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -25,139 +20,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import useOverview from "./useOverview";
 
 const OverviewSection = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-
-  const [isDailyPerformanceLoading, setIsDailyPerformanceLoading] =
-    useState(false);
-  const [isDailyPerformanceError, setIsDailyPerformanceError] = useState(false);
-
-  const [conversationVolumeChartData, setConversationVolumeChartData] =
-    useState([]);
-  const [aiPerformanceChartData, setAiPerformanceChartData] = useState([]);
-  const [dailyPerformanceData, setDailyPerformanceData] = useState([]);
-  const [dailyPerformancePagination, setDailyPerformancePagination] =
-    useState(null);
-  const [overallMetricsData, setOverallMetricsData] = useState({
-    actionSuccessRate: null,
-    aiResolutionRate: null,
-    handoffAccuracy: null,
-    totalConversations: null,
-  });
-
-  const [groupBy, setGroupBy] = useState("daily");
-
-  const { timePeriod } = useAppContext();
-
-  const actionSuccessRate = overallMetricsData?.actionSuccessRate;
-  const aiResolutionRate = overallMetricsData?.aiResolutionRate;
-  const handoffAccuracy = overallMetricsData?.handoffAccuracy;
-  const totalConversations = overallMetricsData?.totalConversations;
-
-  const totalPages = dailyPerformancePagination?.totalPages || 1;
-  const currentPage = dailyPerformancePagination?.currentPage || 1;
-
-  const metricTooltips = {
-    aiResolutionRate:
-      "Percentage of conversations fully resolved by AI without human intervention.",
-    totalConversations:
-      "Total number of unique conversations handled by the system",
-    actionSuccessRate: "Percentage of Success rate of AI responses and actions",
-    handoffAccuracy:
-      "Accuracy of AI in determining when to hand off conversations to human agents.",
-  };
-
-  const overviewApiPath = envs.overviewApiPath;
-
-  const fetchOverviewData = async (timePeriod, page) => {
-    setIsLoading(true);
-    try {
-      const endpoint = getFullUrl(
-        `${overviewApiPath}?period=${timePeriod}&page=${page}`
-      );
-      const response = await fetch(endpoint);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const conversationVolumeChartData = data?.charts?.conversationVolume;
-      const aiPerformanceChartData = data?.charts?.aiPerformance;
-
-      const overallMetrics = data?.overallMetrics;
-      const actionSuccessRate = overallMetrics?.actionSuccessRate;
-      const aiResolutionRate = overallMetrics?.aiResolutionRate;
-      const handoffAccuracy = overallMetrics?.handoffAccuracy;
-      const totalConversations = overallMetrics?.totalConversations;
-      const dailyPerformance = data?.dailyPerformanceSummary?.data;
-      const dailyPerformancePagination =
-        data?.dailyPerformanceSummary?.pagination;
-
-      const processedDailyPerformance = dailyPerformance?.map((day) => {
-        return {
-          ...day,
-          date: day?.date && format(new Date(day?.date), "MMM dd, yyyy"),
-        };
-      });
-
-      setConversationVolumeChartData(conversationVolumeChartData);
-      setAiPerformanceChartData(aiPerformanceChartData);
-      setDailyPerformanceData(processedDailyPerformance);
-      setDailyPerformancePagination(dailyPerformancePagination);
-      setOverallMetricsData({
-        actionSuccessRate,
-        aiResolutionRate,
-        handoffAccuracy,
-        totalConversations,
-      });
-    } catch (error) {
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchDailyPerformanceData = async (timePeriod, page) => {
-    setIsDailyPerformanceLoading(true);
-    try {
-      const endpoint = getFullUrl(
-        `${overviewApiPath}?period=${timePeriod}&page=${page}`
-      );
-      const response = await fetch(endpoint);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const dailyPerformance = data?.dailyPerformanceSummary?.data;
-      const dailyPerformancePagination =
-        data?.dailyPerformanceSummary?.pagination;
-
-      const processedDailyPerformance = dailyPerformance?.map((day) => {
-        return {
-          ...day,
-          date: day?.date && format(new Date(day?.date), "MMM dd, yyyy"),
-        };
-      });
-
-      setDailyPerformanceData(processedDailyPerformance);
-      setDailyPerformancePagination(dailyPerformancePagination);
-    } catch (error) {
-      setIsDailyPerformanceError(true);
-    } finally {
-      setIsDailyPerformanceLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOverviewData(timePeriod, currentPage);
-  }, [timePeriod]);
+  const {
+    isLoading,
+    isError,
+    conversationVolumeChartData,
+    aiPerformanceChartData,
+    dailyPerformanceData,
+    actionSuccessRate,
+    aiResolutionRate,
+    handoffAccuracy,
+    totalConversations,
+    totalPages,
+    currentPage,
+    metricTooltips,
+    fetchDailyPerformanceData,
+  } = useOverview();
 
   if (isLoading) {
     return <LoadingSection />;
@@ -185,18 +65,9 @@ const OverviewSection = () => {
                 <XAxis
                   dataKey="date"
                   tickFormatter={(tick) => {
-                    if (groupBy === "daily")
-                      return new Date(tick).toLocaleDateString([], {
-                        month: "short",
-                        day: "numeric",
-                      });
-                    if (groupBy === "weekly")
-                      return tick.split("-W")[1]
-                        ? `W${tick.split("-W")[1]}`
-                        : tick;
-                    return new Date(tick + "-02").toLocaleDateString([], {
+                    return new Date(tick).toLocaleDateString([], {
                       month: "short",
-                      year: "2-digit",
+                      day: "numeric",
                     });
                   }}
                   tick={{ fontSize: 12 }}
@@ -488,7 +359,7 @@ const OverviewSection = () => {
           Metrics
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
-          <div className="p-4 border rounded-lg group relative">
+          <div className="p-4 border border-gray-200 rounded-lg group relative">
             <div className="absolute top-0 -translate-y-full pointer-events-none right-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="bg-gray-800 text-white text-xs rounded py-1 px-2 max-w-xs">
                 {metricTooltips.aiResolutionRate}
@@ -502,7 +373,7 @@ const OverviewSection = () => {
               {aiResolutionRate?.subtitle}
             </p>
           </div>
-          <div className="p-4 border rounded-lg group relative">
+          <div className="p-4 border border-gray-200 rounded-lg group relative">
             <div className="absolute top-0 -translate-y-full pointer-events-none right-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="bg-gray-800 text-white text-xs rounded py-1 px-2 max-w-xs">
                 {metricTooltips.totalConversations}
@@ -516,7 +387,7 @@ const OverviewSection = () => {
               {totalConversations?.subtitle}
             </p>
           </div>
-          <div className="p-4 border rounded-lg group relative">
+          <div className="p-4 border border-gray-200 rounded-lg group relative">
             <div className="absolute top-0 -translate-y-full pointer-events-none right-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="bg-gray-800 text-white text-xs rounded py-1 px-2 max-w-xs">
                 {metricTooltips.actionSuccessRate}
@@ -530,7 +401,7 @@ const OverviewSection = () => {
               {actionSuccessRate?.subtitle}
             </p>
           </div>
-          <div className="p-4 border rounded-lg group relative">
+          <div className="p-4 border border-gray-200 rounded-lg group relative">
             <div className="absolute top-0 -translate-y-full right-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               <div className="bg-gray-800 text-white text-xs rounded py-1 px-2 max-w-xs">
                 {metricTooltips.handoffAccuracy}

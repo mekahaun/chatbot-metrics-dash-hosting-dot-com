@@ -27,7 +27,7 @@ const Sidebar = ({ sections }) => {
                 <li key={section.id}>
                   <button
                     onClick={() => handleSectionClick(section.id)}
-                    className={`w-full flex items-center px-4 py-2 text-sm rounded-md transition-colors ${
+                    className={`w-full flex items-center px-4 py-2 text-sm rounded-md transition-colors cursor-pointer ${
                       isActive
                         ? "bg-blue-50 text-blue-700"
                         : "text-gray-600 hover:bg-gray-50"

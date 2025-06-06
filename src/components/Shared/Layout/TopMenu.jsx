@@ -39,10 +39,10 @@ const TopMenu = ({ sectionName }) => {
         <select
           value={timePeriod}
           onChange={handleTimePeriodChange}
-          className="block w-auto pl-3 pr-10 py-2 text-sm bg-white border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm"
+          className="block w-auto pl-3 pr-10 py-2 text-sm bg-white border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm text-black"
         >
           {timePeriods.map((period) => (
-            <option key={period.id} value={period.id}>
+            <option key={period.id} value={period.id} className="text-black">
               {period.name}
             </option>
           ))}
