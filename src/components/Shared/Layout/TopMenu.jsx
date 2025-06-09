@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppContext } from "@/components/context/AppContext";
+import { signOut } from "next-auth/react";
 
 const timePeriods = [
   { id: "L1H", name: "Last Hour" },
@@ -34,19 +35,30 @@ const TopMenu = ({ sectionName }) => {
           Displaying data for: {selectedPeriodName}
         </p>
       </div>
-      <div className="flex items-center space-x-3">
-        <span className="text-sm text-gray-600">Time Period:</span>
-        <select
-          value={timePeriod}
-          onChange={handleTimePeriodChange}
-          className="block w-auto pl-3 pr-10 py-2 text-sm bg-white border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm text-black"
-        >
-          {timePeriods.map((period) => (
-            <option key={period.id} value={period.id} className="text-black">
-              {period.name}
-            </option>
-          ))}
-        </select>
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
+          <span className="text-sm text-gray-600">Time Period:</span>
+          <select
+            value={timePeriod}
+            onChange={handleTimePeriodChange}
+            className="block w-auto pl-3 pr-10 py-2 text-sm bg-white border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm text-black"
+          >
+            {timePeriods.map((period) => (
+              <option key={period.id} value={period.id} className="text-black">
+                {period.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+            className="bg-indigo-600 text-white px-4 py-1.5 rounded-md text-sm cursor-pointer"
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
     </div>
   );

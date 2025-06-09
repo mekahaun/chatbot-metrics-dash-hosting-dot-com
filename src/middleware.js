@@ -1,17 +1,29 @@
-import { NextResponse } from 'next/server'
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export function middleware(request) {
-  // Check if the request is for the home page
-  if (request.nextUrl.pathname === '/') {
-    // Redirect to dashboard overview
-    return NextResponse.redirect(new URL('/dashboard/overview', request.url))
+export default withAuth(
+  function middleware(req) {
+    // If user is authenticated and trying to access home page
+    if (req.nextUrl.pathname === "/" && req.nextauth.token) {
+      return NextResponse.redirect(new URL("/dashboard/overview", req.url));
+    }
+    
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: "/auth/signin",
+    },
   }
+);
 
-  // Continue with the request for all other paths
-  return NextResponse.next()
-}
-
+// Specify which routes should be protected
 export const config = {
-  // Specify which paths this middleware will run on
-  matcher: '/'
-}
+  matcher: [
+    "/",
+    "/dashboard/:path*",
+  ],
+};
