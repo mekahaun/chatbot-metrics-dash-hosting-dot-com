@@ -1,4 +1,4 @@
-### **Objective: Automate Next.js Deployment to EC2 with GitLab CI/CD**
+## **Title: Automate Next.js Deployment to EC2 with GitLab CI/CD**
 
 We'll create a `.gitlab-ci.yml` file that instructs GitLab Runners to securely connect to your EC2 instance and deploy your application every time you push to the `main` branch.
 
