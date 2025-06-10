@@ -40,7 +40,7 @@ export default function SignIn() {
               <rect x="11" y="1" width="9" height="9" fill="#7fba00"></rect>
               <rect x="11" y="11" width="9" height="9" fill="#ffb900"></rect>
             </svg>
-            Sign in with Microsoft
+            Sign in with Microsoft (Azure AD)
           </button>
         </div>
       </div>
