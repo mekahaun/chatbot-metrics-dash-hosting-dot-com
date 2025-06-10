@@ -119,4 +119,4 @@ If you see a "Congratulations" message and no errors, your auto-renewal is set u
 
 3.  Also, try navigating to the non-secure version: `http://yourdomain.com`. You should be automatically redirected to the `https` version.
 
-Congratulations! Your Next.js application is now fully secured with a free, auto-renewing SSL certificate.
+Done! Your Next.js application is now fully secured with a free, auto-renewing SSL certificate.

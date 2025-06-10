@@ -6,7 +6,7 @@ This guide will walk you through deploying a Next.js 15 application to an AWS EC
 ### **Prerequisites:**
 1.  An AWS account.
 2.  Git installed on your local machine.
-3.  Your Next.js project pushed to a Git repository (e.g., GitHub, GitLab).
+3.  Next.js project pushed to a Git repository (e.g., GitHub, GitLab).
 4.  A terminal or command prompt on your computer (e.g., Terminal, PowerShell, CMD).
 
 ---

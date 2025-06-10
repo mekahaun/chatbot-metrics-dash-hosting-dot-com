@@ -2,7 +2,7 @@
 
 ### **Prerequisites**
 
-*   **A purchased domain name:** You must have already bought a domain from a registrar like GoDaddy, Namecheap, Google Domains, etc.
+*   **A purchased domain name.**
 *   **Access to your domain registrar's control panel:** You'll need to log in to manage your domain's DNS settings.
 *   **Your EC2 instance's Public IPv4 address:** You can find this on your AWS EC2 dashboard.
 
