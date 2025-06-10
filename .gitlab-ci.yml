@@ -1,0 +1,63 @@
+# Define the stages of our pipeline. We only need one: 'deploy'.
+stages:
+  - deploy
+
+# This is our main deployment job.
+deploy_to_ec2:
+  # Assign this job to the 'deploy' stage.
+  stage: deploy
+
+  # Use a standard Ubuntu image for our job environment.
+  # The GitLab Runner will pull this Docker image to run the commands.
+  image: ubuntu:latest
+
+  # Commands to run before the main script.
+  # We use this to set up our SSH environment.
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'eval $(ssh-agent -s)'
+    # The EC2_SSH_KEY is a File-type variable, so GitLab creates a file with its path in $EC2_SSH_KEY.
+    # We set the correct permissions for the SSH key file.
+    - 'chmod 600 "$EC2_SSH_KEY"'
+
+  # The main script for deployment.
+  script:
+    - |
+      echo "Deploying to EC2 server..."
+      # Execute the deployment commands on the remote EC2 server via SSH.
+      # -o StrictHostKeyChecking=no: Automatically accepts the host's key fingerprint.
+      # Note the double quotes around the multi-line script.
+      ssh -i "$EC2_SSH_KEY" -o StrictHostKeyChecking=no ${EC2_USERNAME}@${EC2_HOST} "
+        # ====================================================================
+        # SCRIPT RUNNING ON THE EC2 SERVER
+        # ====================================================================
+        
+        # Load NVM environment for the non-interactive shell.
+        # Note the escaped dollar signs (\$) to prevent GitLab from expanding them locally.
+        export NVM_DIR=\"\$HOME/.nvm\"
+        [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"
+        
+        # Navigate to the project directory.
+        # IMPORTANT: Replace 'dashboard' with your project folder name on the server.
+        cd ~/dashboard
+        
+        echo 'Pulling latest code from main branch...'
+        git pull origin main
+        
+        echo 'Installing dependencies...'
+        npm install
+        
+        echo 'Building the application...'
+        npm run build
+        
+        echo 'Reloading the app with PM2...'
+        # IMPORTANT: Replace 'my-next-app' with your PM2 process name.
+        pm2 reload my-next-app
+        
+        echo 'Deployment finished successfully!'
+      "
+
+  # Define rules for when this job should run.
+  rules:
+    # Only run this job on pushes to the 'main' branch.
+    - if: '$CI_COMMIT_BRANCH == "main"'
