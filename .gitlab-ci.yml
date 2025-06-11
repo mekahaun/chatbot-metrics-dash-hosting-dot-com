@@ -11,6 +11,9 @@ main:
     --exclude=.git
     -a $CI_PROJECT_DIR/ /opt/dashboard/ # Copy the data into place
   
+  - echo 'Changing directory...'
+  - cd /opt/dashboard/
+
   - echo 'Installing dependencies...'
   - npm install
 
