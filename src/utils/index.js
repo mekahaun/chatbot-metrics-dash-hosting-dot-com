@@ -5,6 +5,7 @@ export { formatShortTimeForFlow } from "./formatShortTimeForFlow";
 export { formatTimestamp } from "./formatTimestamp";
 export { getChangeTypeIcon } from "./getChangeTypeIcon";
 export { getEnv } from "./getEnv";
+export { getRoutes } from "./getRoutes";
 export { getFileTypeIcon } from "./getFileTypeIcon";
 export { getFullUrl } from "./getFullUrl";
 export { getLogLineColorClass } from "./getLogLineColorClass";

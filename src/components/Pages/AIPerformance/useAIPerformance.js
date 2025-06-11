@@ -1,4 +1,4 @@
-import { getEnv, getFullUrl } from "@/utils";
+import { getRoutes, getFullUrl } from "@/utils";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -14,7 +14,7 @@ const useAIPerformance = (timePeriod) => {
   const [qualityPerformanceData, setQualityPerformanceData] = useState([]);
   const [handoffReasonsData, setHandoffReasonsData] = useState([]);
 
-  const { aiPerformanceApiPath } = getEnv();
+  const { aiPerformanceApiPath } = getRoutes();
 
   const fetchAIPerformanceData = async (timePeriod) => {
     setIsLoading(true);

@@ -1,5 +1,5 @@
 import { useAppContext } from "@/components/context/AppContext";
-import {getEnv, getFullUrl} from "@/utils";
+import {getRoutes, getFullUrl} from "@/utils";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -44,7 +44,7 @@ const useOverview = () => {
       "Accuracy of AI in determining when to hand off conversations to human agents.",
   };
 
-  const { overviewApiPath } = getEnv();
+  const { overviewApiPath } = getRoutes();
 
   const fetchOverviewData = async (timePeriod, page) => {
     setIsLoading(true);

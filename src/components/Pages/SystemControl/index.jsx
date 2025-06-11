@@ -2,7 +2,7 @@
 
 import ErrorSection from "@/components/Shared/Common/Errors/ErrorSection";
 import LoadingSection from "@/components/Shared/Common/Loaders/LoadingSection";
-import { getEnv, getFullUrl } from "@/utils";
+import { getRoutes, getFullUrl } from "@/utils";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -14,7 +14,7 @@ const SystemControl = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingToggle, setPendingToggle] = useState(null);
 
-  const { agentStatusApiPath, agentControlApiPath } = getEnv();
+  const { agentStatusApiPath, agentControlApiPath } = getRoutes();
 
   const handleAgentToggle = async (agentName, currentStatus) => {
     const agent = agentData?.agentDetails[agentName];

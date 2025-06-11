@@ -1,5 +1,4 @@
-import { getEnv } from "@/utils/getEnv";
-import { getFullUrl } from "@/utils";
+import { getFullUrl, getRoutes } from "@/utils";
 import { useEffect, useState } from "react";
 
 export const useActivityLogs = (timePeriod) => {
@@ -28,7 +27,7 @@ export const useActivityLogs = (timePeriod) => {
   const [isErrorLogDetails, setErrorLogDetails] = useState(false);
   const [logDetails, setLogDetails] = useState(null);
 
-  const { activityLogsApiPath, activityDetailApiPath } = getEnv();
+  const { activityLogsApiPath, activityDetailApiPath } = getRoutes();
 
   // Computed values
   const totalConversationPages = pagination?.totalPages || 1;
@@ -101,14 +100,14 @@ export const useActivityLogs = (timePeriod) => {
 
   useEffect(() => {
     fetchActivityLogList(timePeriod, currentConversationPage);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timePeriod]);
 
   useEffect(() => {
     if (expandedLog) {
       fetchLogDetails(expandedLog);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedLog]);
 
   useEffect(() => {
