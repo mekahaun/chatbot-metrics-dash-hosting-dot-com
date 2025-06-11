@@ -5,8 +5,6 @@ main:
   tags:
     - botanalytics # Use the correct runner
   stage: deploy
-  only:
-    - main
   script:
   - /usr/bin/rsync --delete
     --exclude=.env
