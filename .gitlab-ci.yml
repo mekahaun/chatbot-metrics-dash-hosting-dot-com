@@ -1,6 +1,20 @@
 stages:
   - deploy
 
+.populate_env: &populate_env
+
+  - echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" >> /opt/dashboard/.env
+  - echo "NEXT_PUBLIC_KB_SYNC_API_URL=$NEXT_PUBLIC_KB_SYNC_API_URL" >> /opt/dashboard/.env
+  - echo "NEXT_PUBLIC_CHATWOOT_URL_WITH_ACC_ID=$NEXT_PUBLIC_CHATWOOT_URL_WITH_ACC_ID" >> /opt/dashboard/.env
+
+  - echo "AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID" >> /opt/dashboard/.env
+  - echo "AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET" >> /opt/dashboard/.env
+  - echo "AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID" >> /opt/dashboard/.env
+
+  - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> /opt/dashboard/.env
+  - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> /opt/dashboard/.env
+
+
 main:
   tags:
     - botanalytics # Use the correct runner
@@ -17,10 +31,11 @@ main:
   - echo 'Installing dependencies...'
   - npm install
 
+  - echo 'Populating environment variables...'
+  - *populate_env
+
   - echo 'Building the application...'
   - npm run build
-
-  - echo 'Populating environment variables...'
 
   - echo 'Reloading the app with PM2...'
   - pm2 reload chatbot-metrics-dashboard
