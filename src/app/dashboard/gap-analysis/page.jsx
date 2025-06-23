@@ -33,7 +33,7 @@ import {
   AlertOctagon
 } from 'lucide-react';
 
-const API_BASE_URL = 'https://w4f1hwfdia.execute-api.us-east-1.amazonaws.com/prod/gap-analysis-prod';
+const API_BASE_URL = 'https://w4f1hwfdia.execute-api.us-east-1.amazonaws.com/prod/gap-analysis';
 
 const GapAnalysisPage = () => {
   const [records, setRecords] = useState([]);
@@ -120,8 +120,8 @@ const GapAnalysisPage = () => {
     if (conversationUrl) {
       window.open(conversationUrl, '_blank');
     } else {
-      // Fallback URL if no specific URL is provided
-      window.open(`/conversation/${conversationId}`, '_blank');
+      // Fallback URL using the standard structure
+      window.open(`https://webchat.mysecurecloudhost.com/app/accounts/1/conversations/${conversationId}`, '_blank');
     }
   };
 
@@ -387,13 +387,6 @@ const GapAnalysisPage = () => {
                       
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{record.userQuery}</h3>
                       
-                      {/* Conversation Summary */}
-                      {record.fullRecord?.conversation_summary && (
-                        <p className="text-sm text-gray-600 mb-3 italic">
-                          "{record.fullRecord.conversation_summary}"
-                        </p>
-                      )}
-                      
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <Bot className="w-4 h-4" />
@@ -464,117 +457,52 @@ const GapAnalysisPage = () => {
                           </div>
                         </div>
                         {record.fullRecord.user_intent?.user_context && (
-                          <div className="mt-3">
+                          <div className="mt-3 col-span-full">
                             <span className="font-medium text-gray-700">User Context:</span>
                             <p className="text-gray-600 text-sm">{record.fullRecord.user_intent.user_context}</p>
                           </div>
                         )}
                       </div>
 
-                      {/* Enhanced Information Completeness Analysis */}
-                      {record.fullRecord.detailed_information_analysis && (
-                        <div className="bg-white rounded-lg p-4">
-                          <h4 className="flex items-center gap-2 font-semibold text-gray-900 mb-4">
-                            <Database className="w-5 h-5 text-blue-600" />
-                            Detailed Information Analysis
-                          </h4>
-                          
-                          {/* Information Scores */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                              <span className="text-sm font-medium text-gray-700">Information Available:</span>
-                              <div className="w-full bg-gray-200 rounded-full h-3 mt-1 mb-1">
-                                <div 
-                                  className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
-                                  style={{ width: `${(record.fullRecord.detailed_information_analysis?.information_available_score || 0) * 10}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-gray-600">{record.fullRecord.detailed_information_analysis?.information_available_score}/10</span>
+                      {/* Information Completeness */}
+                      <div className="bg-white rounded-lg p-4">
+                        <h4 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                          <Info className="w-5 h-5 text-blue-600" />
+                          Information Completeness
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div>
+                            <span className="text-sm font-medium text-gray-700">Information Available:</span>
+                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full" 
+                                style={{ width: `${(record.fullRecord.information_completeness_analysis?.information_available_score || 0) * 10}%` }}
+                              ></div>
                             </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-700">Information Needed:</span>
-                              <div className="w-full bg-gray-200 rounded-full h-3 mt-1 mb-1">
-                                <div 
-                                  className="bg-orange-600 h-3 rounded-full transition-all duration-300" 
-                                  style={{ width: `${(record.fullRecord.detailed_information_analysis?.information_needed_score || 0) * 10}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-gray-600">{record.fullRecord.detailed_information_analysis?.information_needed_score}/10</span>
-                            </div>
+                            <span className="text-xs text-gray-600">{record.fullRecord.information_completeness_analysis?.information_available_score}/10</span>
                           </div>
-
-                          {/* Information Quality Assessment */}
-                          {record.fullRecord.detailed_information_analysis?.information_quality_assessment && (
-                            <div className="mb-6">
-                              <h5 className="text-sm font-medium text-gray-700 mb-3">Information Quality Assessment:</h5>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                {Object.entries(record.fullRecord.detailed_information_analysis.information_quality_assessment).map(([key, value]) => (
-                                  <div key={key} className={`px-3 py-2 rounded-lg text-xs font-medium ${getQualityColor(value)}`}>
-                                    <div className="font-semibold capitalize">{key.replace('_', ' ')}</div>
-                                    <div className="capitalize">{value.replace('_', ' ')}</div>
-                                  </div>
-                                ))}
-                              </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-700">Information Needed:</span>
+                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                              <div 
+                                className="bg-orange-600 h-2 rounded-full" 
+                                style={{ width: `${(record.fullRecord.information_completeness_analysis?.information_needed_score || 0) * 10}%` }}
+                              ></div>
                             </div>
-                          )}
-
-                          {/* Currently Available Information */}
-                          {record.fullRecord.detailed_information_analysis?.currently_available_information?.length > 0 && (
-                            <div className="mb-6">
-                              <h5 className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                                <CheckSquare className="w-4 h-4 text-green-600" />
-                                Currently Available Information:
-                              </h5>
-                              <div className="space-y-3">
-                                {record.fullRecord.detailed_information_analysis.currently_available_information.map((info, index) => (
-                                  <div key={index} className="border border-green-200 rounded-lg p-3 bg-green-50">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <h6 className="font-medium text-green-900">{info.information_type}</h6>
-                                      <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(info.usefulness_for_query)}`}>
-                                        {info.usefulness_for_query} usefulness
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-green-800 mb-2">{info.content_summary}</p>
-                                    {info.source_document && (
-                                      <div className="flex items-center gap-1 text-xs text-green-600">
-                                        <FileText className="w-3 h-3" />
-                                        Source: {info.source_document}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Missing Information Details */}
-                          {record.fullRecord.detailed_information_analysis?.missing_information_details?.length > 0 && (
-                            <div>
-                              <h5 className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                                <XSquare className="w-4 h-4 text-red-600" />
-                                Missing Information Details:
-                              </h5>
-                              <div className="space-y-3">
-                                {record.fullRecord.detailed_information_analysis.missing_information_details.map((info, index) => (
-                                  <div key={index} className="border border-red-200 rounded-lg p-3 bg-red-50">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <h6 className="font-medium text-red-900">{info.missing_info_type}</h6>
-                                      <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(info.impact_if_added)}`}>
-                                        {info.impact_if_added} impact
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-red-800 mb-2">{info.why_needed}</p>
-                                    <div className="bg-red-100 rounded p-2 mt-2">
-                                      <span className="text-xs font-medium text-red-700">Suggested Content:</span>
-                                      <p className="text-xs text-red-700 mt-1">{info.suggested_content}</p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                            <span className="text-xs text-gray-600">{record.fullRecord.information_completeness_analysis?.information_needed_score}/10</span>
+                          </div>
                         </div>
-                      )}
+                        {record.fullRecord.information_completeness_analysis?.critical_missing_pieces && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-700">Critical Missing Pieces:</span>
+                            <ul className="list-disc list-inside text-sm text-gray-600 mt-1">
+                              {record.fullRecord.information_completeness_analysis.critical_missing_pieces.map((piece, index) => (
+                                <li key={index}>{piece}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Gap Classification */}
                       <div className="bg-white rounded-lg p-4">
