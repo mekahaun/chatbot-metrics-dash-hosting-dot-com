@@ -2,6 +2,7 @@
 
 import { AppProvider } from "@/components/context/AppContext";
 import {
+  BarChart3,
   BrainCircuit,
   Filter,
   LayoutDashboard,
@@ -31,6 +32,11 @@ const sections = [
     id: "knowledge-sync",
     name: "Knowledge Sync",
     icon: <RefreshCw size={18} />,
+  },
+  {
+    id: "gap-analysis",
+    name: "Gap Analysis",
+    icon: <BarChart3 size={18} />,
   },
   {
     id: "system-control",
