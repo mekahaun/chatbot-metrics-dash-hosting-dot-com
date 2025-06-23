@@ -51,14 +51,14 @@ const TopMenu = ({ sectionName }) => {
           </select>
         </div>
 
-        <div>
+        {/* <div>
           <button
             onClick={() => signOut({ callbackUrl: "/auth/signin" })}
             className="bg-indigo-600 text-white px-4 py-1.5 rounded-md text-sm cursor-pointer"
           >
             Sign Out
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
