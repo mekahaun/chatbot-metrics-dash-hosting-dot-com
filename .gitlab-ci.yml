@@ -2,7 +2,7 @@ stages:
   - deploy
 
 .populate_env: &populate_env
-
+  - rm -rf /opt/dashboard/.env
   - echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" >> /opt/dashboard/.env
   - echo "NEXT_PUBLIC_KB_SYNC_API_URL=$NEXT_PUBLIC_KB_SYNC_API_URL" >> /opt/dashboard/.env
   - echo "NEXT_PUBLIC_CHATWOOT_URL_WITH_ACC_ID=$NEXT_PUBLIC_CHATWOOT_URL_WITH_ACC_ID" >> /opt/dashboard/.env
