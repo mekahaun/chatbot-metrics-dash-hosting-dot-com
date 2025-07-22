@@ -2,11 +2,13 @@
 
 import ErrorSection from "@/components/Shared/Common/Errors/ErrorSection";
 import LoadingSection from "@/components/Shared/Common/Loaders/LoadingSection";
+import TooltipComponent from "@/components/Shared/Common/Tooltip";
 import {
   ArrowDown,
   ArrowUp,
   ChevronLeft,
   ChevronRight,
+  ShieldQuestionIcon,
   Target,
   Users,
 } from "lucide-react";
@@ -54,8 +56,39 @@ const OverviewSection = () => {
         {/* Column 1: Conversation Volume Chart */}
         <div className="bg-white p-4 shadow rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">
+            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
               Conversation Volume Trend
+              <a
+                className="conversations-volume-trend-tooltip cursor-pointer ml-3 inline-block"
+                href="#"
+              >
+                <ShieldQuestionIcon className="w-5 h-5 mr-2 text-blue-500" />
+              </a>
+              <TooltipComponent
+                anchorSelect=".conversations-volume-trend-tooltip"
+                text={
+                  <div className="max-w-md">
+                    This chart shows the volume and resolution status of
+                    conversations over time.
+                    <br />
+                    <br />
+                    Total Conversations: Total number of conversations handled
+                    by the system (blue line)
+                    <br />
+                    <br />
+                    Only AI: Conversations resolved entirely by AI without human
+                    intervention (green line)
+                    <br />
+                    <br />
+                    AI + Human: Conversations that required both AI and human
+                    assistance (yellow line)
+                    <br />
+                    <br />
+                    Still Pending: Conversations that are still active or
+                    unresolved (red line)
+                  </div>
+                }
+              />
             </h3>
           </div>
           <div style={{ height: "300px" }}>
@@ -137,6 +170,37 @@ const OverviewSection = () => {
           <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center">
             <Target className="w-5 h-5 mr-2 text-purple-500" /> AI Performance
             Trends
+            <a
+              className="ai-performance-trend-tooltip cursor-pointer ml-3 inline-block"
+              href="#"
+            >
+              <ShieldQuestionIcon className="w-5 h-5 mr-2 text-blue-500" />
+            </a>
+            <TooltipComponent
+              anchorSelect=".ai-performance-trend-tooltip"
+              text={
+                <div className="max-w-md">
+                  This chart tracks multiple AI performance metrics over time on
+                  different scales.
+                  <br />
+                  <br />
+                  Intent Accuracy: How confident AI is when understanding user
+                  requests (0-100%, purple line)
+                  <br />
+                  <br />
+                  Context Quality (Score): Quality of information retrieved by
+                  AI (0-10 scale, teal line)
+                  <br />
+                  <br />
+                  Action Success: Success rate of AI-initiated actions (0-100%,
+                  green line)
+                  <br />
+                  <br />
+                  Handoff Accuracy: Accuracy of AI routing decisions (0-100%,
+                  pink line)
+                </div>
+              }
+            />
           </h3>
           <div className="flex-grow" style={{ minHeight: "250px" }}>
             {" "}

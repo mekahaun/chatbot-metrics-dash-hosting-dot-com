@@ -97,6 +97,7 @@ const useAIPerformance = (timePeriod) => {
       const routingAccuracySalesTeam = routingAccuracy?.sales;
       const routingAccuracyBillingTeam = routingAccuracy?.billing;
       const routingAccuracyGeneral = routingAccuracy?.general;
+      const routingAccuracyTrustSafety = routingAccuracy?.trust_safety;
 
       const processedRoutingAccuracyData = [
         {
@@ -122,6 +123,12 @@ const useAIPerformance = (timePeriod) => {
           correct: routingAccuracyGeneral?.correctly_routed,
           reassign: routingAccuracyGeneral?.reassigned_incorrect,
           total: routingAccuracyGeneral?.total_ai_handoffs_to_team,
+        },
+        {
+          team: "Trust & Safety",
+          correct: routingAccuracyTrustSafety?.correctly_routed,
+          reassign: routingAccuracyTrustSafety?.reassigned_incorrect,
+          total: routingAccuracyTrustSafety?.total_ai_handoffs_to_team,
         },
       ];
 

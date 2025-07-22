@@ -8,7 +8,8 @@ import {
 } from "recharts";
 import renderResolutionPieLabel from "./renderResolutionPieLabel";
 import CustomTooltip from "./CustomTooltip";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ShieldQuestionIcon } from "lucide-react";
+import TooltipComponent from "@/components/Shared/Common/Tooltip";
 
 const ConversationResolutionChart = ({ data }) => {
   return (
@@ -16,6 +17,26 @@ const ConversationResolutionChart = ({ data }) => {
       <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
         <CheckCircle className="w-5 h-5 mr-2 text-green-500" /> Conversation
         Resolution Types
+        <a className="conversation-resolution-types-tooltip cursor-pointer ml-3" href="#">
+          <ShieldQuestionIcon className="w-5 h-5 mr-2 text-blue-500" />
+        </a>
+        <TooltipComponent
+          anchorSelect=".conversation-resolution-types-tooltip"
+          text={
+            <div className="max-w-md">
+              This shows how conversations are being resolved in your system.
+              <br />
+              <br />
+              Resolved by AI: Conversations completed entirely by AI without human help
+              <br />
+              <br />
+              Resolved by Human (Post-Handoff): Conversations where AI handed off to humans who then resolved the issue
+              <br />
+              <br />
+              Open/Unresolved: Active conversations still in progress or pending
+            </div>
+          }
+        />
       </h3>
       <div style={{ height: "350px" }}>
         <ResponsiveContainer width="100%" height="100%">
