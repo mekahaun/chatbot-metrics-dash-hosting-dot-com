@@ -33,7 +33,7 @@ import {
   AlertOctagon
 } from 'lucide-react';
 
-const API_BASE_URL = 'https://w4f1hwfdia.execute-api.us-east-1.amazonaws.com/prod/gap-analysis';
+const API_BASE_URL = 'https://zkpmukuezk.execute-api.eu-west-2.amazonaws.com/Prod/gap-analysis';
 
 const GapAnalysisPage = () => {
   const [records, setRecords] = useState([]);
