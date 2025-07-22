@@ -9,13 +9,34 @@ import {
     YAxis,
 } from "recharts";
 import TeamRoutingTooltip from "./TeamRoutingTooltip";
-import { Users2 } from "lucide-react";
+import { ShieldQuestionIcon, Users2 } from "lucide-react";
+import TooltipComponent from "@/components/Shared/Common/Tooltip";
 
 const RoutingAccuracyChart = ({ data }) => {
   return (
     <div className="bg-white p-4 shadow rounded-lg">
       <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
         <Users2 className="w-5 h-5 mr-2 text-indigo-500" /> Routing Accuracy
+        <a className="routing-accuracy-tooltip cursor-pointer ml-3" href="#">
+          <ShieldQuestionIcon className="w-5 h-5 mr-2 text-blue-500" />
+        </a>
+        <TooltipComponent
+          anchorSelect=".routing-accuracy-tooltip"
+          text={
+            <div className="max-w-md">
+              This shows how accurately AI routes conversations to the correct teams.
+              <br />
+              <br />
+              Correctly Routed: Conversations properly assigned to the right team (shown in green)
+              <br />
+              <br />
+              Reassigned/Incorrect: Conversations that needed to be moved to a different team (shown in yellow)
+              <br />
+              <br />
+              Teams shown: Technical Support, Sales Team, Billing Team, General
+            </div>
+          }
+        />
       </h3>
       <div
         style={{

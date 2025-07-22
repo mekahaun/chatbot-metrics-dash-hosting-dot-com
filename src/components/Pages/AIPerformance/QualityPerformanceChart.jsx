@@ -9,7 +9,8 @@ import {
     YAxis,
 } from "recharts";
 import CustomTooltip from "./CustomTooltip";
-import { TrendingUp } from "lucide-react";
+import { ShieldQuestionIcon, TrendingUp } from "lucide-react";
+import TooltipComponent from "@/components/Shared/Common/Tooltip";
 
 const QualityPerformanceChart = ({ data }) => {
   return (
@@ -17,6 +18,23 @@ const QualityPerformanceChart = ({ data }) => {
       <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
         <TrendingUp className="w-5 h-5 mr-2 text-purple-500" /> Quality &
         Performance Over Time
+        <a className="quality-performance-over-time-tooltip cursor-pointer ml-3" href="#">
+          <ShieldQuestionIcon className="w-5 h-5 mr-2 text-blue-500" />
+        </a>
+        <TooltipComponent
+          anchorSelect=".quality-performance-over-time-tooltip"
+          text={
+            <div className="max-w-md">
+              This chart tracks the quality of AI responses and success rate of automated actions over time.
+              <br />
+              <br />
+              Context Quality (RAG): Average quality of information retrieved by AI to answer questions (0-10 scale)
+              <br />
+              <br />
+              Action Success Rate: Percentage of AI-initiated actions that were completed successfully (0-100%)
+            </div>
+          }
+        />
       </h3>
       <div style={{ height: "450px" }}>
         <ResponsiveContainer width="100%" height="100%">
