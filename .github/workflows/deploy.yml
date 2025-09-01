@@ -1,0 +1,57 @@
+# Name of your workflow
+name: Deploy Next.js App to EC2
+
+# Trigger: This workflow runs on a push event to the 'main' branch
+on:
+  push:
+    branches:
+      - main
+
+# Jobs to be executed
+jobs:
+  deploy:
+    # The type of virtual machine to run the job on
+    runs-on: ubuntu-latest
+
+    # Steps to be executed in the job
+    steps:
+      # Step 1: Check out your repository code so the workflow can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: SSH into EC2 and run deployment commands
+      - name: Deploy to EC2
+        # Using a popular and well-maintained action to handle SSH
+        uses: appleboy/ssh-action@master
+        with:
+          # Get the secrets we stored in GitHub settings
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          
+          # The commands to run on the EC2 server
+          # Note the '&&' which chains commands together. If one fails, the rest won't run.
+          script: |
+            # ====================================================================
+            # THIS IS THE FIX: Manually source the NVM script to load Node.js
+            # ====================================================================
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # Now that NVM is loaded, the rest of the commands will work.
+            # Navigate to the project directory
+            # IMPORTANT: Replace 'your-repo-name' with the actual name of your project folder on the server
+            cd ~/chatbot-metrics-dash-hosting-dot-com
+
+            # Pull the latest changes from the main branch
+            git pull origin main
+
+            # Install any new dependencies
+            npm install
+
+            # Build the Next.js application for production
+            npm run build
+
+            # Reload the application with PM2 for zero-downtime deployment
+            # IMPORTANT: Replace 'my-next-app' with the name you gave your app in PM2
+            pm2 reload chatbot-ai-metrics-dashboard
