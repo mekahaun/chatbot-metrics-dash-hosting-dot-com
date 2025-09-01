@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/dashboard/layout.jsx", "src/components/Shared/Layout/Sidebar.jsx", "src/components/Shared/Layout/TopMenu.jsx", "src/app/layout.jsx", "src/utils/getStatusStyles.js", "src/components/Pages/Overview/index.jsx", "src/components/Shared/Common/Loaders/LoadingSection.jsx", "src/app/dashboard/ai-performance/page.jsx", "src/components/Pages/SystemControl/index.jsx", "src/components/Pages/ActivityLogs/index.jsx", "src/components/Pages/ActivityLogs/LogDetails/index.jsx", "src/components/Pages/ActivityLogs/LogDetails/LogMainDetails.jsx", "src/components/Pages/ActivityLogs/LogDetails/DetailItem.jsx"],
+  "exclude": ["node_modules"]
+}
