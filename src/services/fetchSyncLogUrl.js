@@ -1,10 +1,10 @@
-import { getEnv } from "@/utils";
+import { getFullUrl } from "@/utils";
 
-const { kbSyncApiPath } = getEnv();
 
 export async function fetchSyncLogUrl(syncId) {
   console.log(`Fetching log URL for sync: ${syncId}`);
-  const response = await fetch(`${kbSyncApiPath}/api/syncs/${syncId}/logs`);
+  const endpoint = getFullUrl(`/api/syncs/${syncId}/logs`);
+  const response = await fetch(endpoint);
 
   if (!response.ok) {
     console.error(

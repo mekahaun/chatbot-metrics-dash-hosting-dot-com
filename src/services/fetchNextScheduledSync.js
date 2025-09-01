@@ -1,9 +1,8 @@
-import { getEnv } from "@/utils";
-
-const { kbSyncApiPath } = getEnv();
+import { getFullUrl } from "@/utils";
 
 export async function fetchNextScheduledSync() {
-  const response = await fetch(`${kbSyncApiPath}/api/next-sync`);
+  const endpoint = getFullUrl("/api/next-sync");
+  const response = await fetch(endpoint);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} ${response.statusText}`);
   }

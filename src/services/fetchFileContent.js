@@ -1,15 +1,12 @@
-import { getEnv } from "@/utils";
-
-const { kbSyncApiPath } = getEnv();
+import { getFullUrl } from "@/utils";
 
 export async function fetchFileContent(s3Path) {
   if (!s3Path) {
     throw new Error("S3 path is required");
   }
 
-  const response = await fetch(
-    `${kbSyncApiPath}/api/files?path=${encodeURIComponent(s3Path)}`
-  );
+  const endpoint = getFullUrl(`/api/files?path=${encodeURIComponent(s3Path)}`);
+  const response = await fetch(endpoint);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} ${response.statusText}`);
   }

@@ -1,9 +1,9 @@
-import { getEnv } from "@/utils";
+import { getFullUrl } from "@/utils";
 
-const { kbSyncApiPath } = getEnv();
 
 export async function triggerSync() {
-  const response = await fetch(`${kbSyncApiPath}/api/trigger-sync`, {
+  const endpoint = getFullUrl("/api/trigger-sync");
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -21,9 +21,9 @@ const TopMenu = ({ sectionName }) => {
     ? selectedPeriodObject.name
     : timePeriod;
 
-  const handleTimePeriodChange = (e) => {
-    setTimePeriod(e.target.value);
-  };
+  // const handleTimePeriodChange = (e) => {
+  //   setTimePeriod(e.target.value);
+  // };
 
   return (
     <div className="h-20 bg-white border-b border-gray-300 flex items-center justify-between px-8">
@@ -31,12 +31,12 @@ const TopMenu = ({ sectionName }) => {
         <h1 className="text-xl font-semibold text-gray-800">
           {sectionName || "Dashboard"}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        {/* <p className="text-sm text-gray-500 mt-1">
           Displaying data for: {selectedPeriodName}
-        </p>
+        </p> */}
       </div>
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-3">
+        {/* <div className="flex items-center space-x-3">
           <span className="text-sm text-gray-600">Time Period:</span>
           <select
             value={timePeriod}
@@ -49,7 +49,7 @@ const TopMenu = ({ sectionName }) => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         <div>
           <button

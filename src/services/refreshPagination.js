@@ -1,9 +1,9 @@
-import { getEnv } from "@/utils";
+import { getFullUrl } from "@/utils";
 
-const { kbSyncApiPath } = getEnv();
 
 export async function refreshPagination() {
-  const response = await fetch(`${kbSyncApiPath}/api/pagination/refresh`, {
+  const endpoint = getFullUrl("/api/pagination/refresh");
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

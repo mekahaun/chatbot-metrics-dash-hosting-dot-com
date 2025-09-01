@@ -1,16 +1,15 @@
-import { getEnv } from "@/utils";
-
-const { kbSyncApiPath } = getEnv();
+import { getFullUrl } from "@/utils";
 
 export async function fetchSyncEventsByPage(pageNumber, options = {}) {
   const { pageSize, status } = options;
-  let url = `${kbSyncApiPath}/api/syncs/page/${pageNumber}?`;
+  let url = `/api/syncs/page/${pageNumber}?`;
 
   const params = new URLSearchParams();
   if (pageSize) params.append("pageSize", pageSize);
   if (status) params.append("status", status);
 
-  const response = await fetch(`${url}${params.toString()}`);
+  const endpoint = getFullUrl(`${url}${params.toString()}`);
+  const response = await fetch(endpoint);
   if (!response.ok) {
     console.error(
       `API error when fetching sync events page ${pageNumber}: ${response.status} ${response.statusText}`

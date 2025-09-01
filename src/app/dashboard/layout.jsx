@@ -1,20 +1,17 @@
 "use client";
 
 import { AppProvider } from "@/components/context/AppContext";
+import TopMenu from "@/components/Shared/Layout/TopMenu";
 import {
   BarChart3,
-  BrainCircuit,
-  Filter,
   LayoutDashboard,
   ListChecks,
   RefreshCw,
-  SearchCode,
   Settings,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import Sidebar from "../../components/Shared/Layout/Sidebar";
-import TopMenu from "../../components/Shared/Layout/TopMenu";
 
 const sections = [
   { id: "overview", name: "Overview", icon: <LayoutDashboard size={18} /> },
@@ -22,11 +19,6 @@ const sections = [
     id: "activity-logs",
     name: "Activity Logs",
     icon: <ListChecks size={18} />,
-  },
-  {
-    id: "ai-performance",
-    name: "AI Performance",
-    icon: <BrainCircuit size={18} />,
   },
   {
     id: "knowledge-sync",
@@ -43,16 +35,6 @@ const sections = [
     name: "System Control",
     icon: <Settings size={18} />,
   },
-  {
-    id: "conversation-funnel",
-    name: "Conversation Funnel (Coming Soon)",
-    icon: <Filter size={18} />,
-  },
-  {
-    id: "event-deep-dive",
-    name: "Event Deep Dive (Coming Soon)",
-    icon: <SearchCode size={18} />,
-  },
 ];
 
 export default function DashboardLayout({ children }) {
@@ -60,7 +42,7 @@ export default function DashboardLayout({ children }) {
   const currentSection = sections.find(
     (section) => pathname === `/dashboard/${section.id}`
   );
-
+  
   return (
     <AppProvider>
       <div className="flex h-screen w-screen bg-gray-100 overflow-hidden">

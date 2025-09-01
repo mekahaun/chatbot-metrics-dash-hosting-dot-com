@@ -30,10 +30,11 @@ import {
   Database,
   CheckSquare,
   XSquare,
-  AlertOctagon
+  AlertOctagon,
+  Inbox
 } from 'lucide-react';
 
-const API_BASE_URL = 'https://fgs5dfhohf.execute-api.eu-west-2.amazonaws.com/Prod/gap-analysis';
+const API_BASE_URL = 'https://bvr0iiipte.execute-api.eu-west-1.amazonaws.com/Prod/gap-analysis-v2';
 
 const GapAnalysisPage = () => {
   const [records, setRecords] = useState([]);
@@ -44,6 +45,9 @@ const GapAnalysisPage = () => {
   // Filter states
   const [dateFilter, setDateFilter] = useState('');
   const [conversationIdFilter, setConversationIdFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [aggregations, setAggregations] = useState({});
   
   // Current query info
   const [queryInfo, setQueryInfo] = useState(null);
@@ -63,7 +67,7 @@ const GapAnalysisPage = () => {
   }, []);
 
   // Fetch data from API
-  const fetchGapAnalysisData = async () => {
+  const fetchGapAnalysisData = async (page = 1) => {
     setLoading(true);
     setError(null);
     
@@ -71,24 +75,33 @@ const GapAnalysisPage = () => {
       let url = API_BASE_URL;
       const params = new URLSearchParams();
       
+      // Add pagination
+      params.append('page', page.toString());
+      params.append('pageSize', '20');
+      
+      // Use period for date filtering (V2 API uses period instead of date)
       if (dateFilter) {
-        params.append('date', dateFilter);
+        params.append('startDate', dateFilter);
+        params.append('endDate', dateFilter);
+      } else {
+        params.append('period', 'L7D'); // Default to last 7 days
       }
       
       if (conversationIdFilter) {
-        params.append('conversation_id', conversationIdFilter);
+        params.append('conversationId', conversationIdFilter);
       }
       
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
+      url += `?${params.toString()}`;
       
       const response = await fetch(url);
       const data = await response.json();
       
       if (data.success) {
-        setRecords(data.records);
+        setRecords(data.records || []);
         setQueryInfo(data.query);
+        setAggregations(data.aggregations || {});
+        setTotalPages(data.query?.totalPages || 1);
+        setCurrentPage(page);
       } else {
         setError(data.error || 'Failed to fetch data');
       }
@@ -101,8 +114,8 @@ const GapAnalysisPage = () => {
 
   // Fetch data when filters change
   useEffect(() => {
-    fetchGapAnalysisData();
-  }, [dateFilter, conversationIdFilter]);
+    fetchGapAnalysisData(currentPage);
+  }, [dateFilter, conversationIdFilter, currentPage]);
 
   // Toggle card expansion
   const toggleCard = (conversationId) => {
@@ -190,13 +203,14 @@ const GapAnalysisPage = () => {
     }
   };
 
-  // Calculate stats
+  // Use aggregations from V2 API
   const stats = {
-    total: records.length,
-    canBeAutomated: records.filter(r => r.canBeAutomated).length,
-    highSeverity: records.filter(r => r.severity === 'high' || r.severity === 'critical').length,
-    toolRequirements: records.filter(r => r.gapType === 'tool_requirement').length,
-    knowledgeGaps: records.filter(r => r.gapType === 'knowledge_gap').length
+    total: aggregations.totalCount || 0,
+    preventable: aggregations.preventableHandoffs || 0,
+    legitimate: aggregations.legitimateHandoffs || 0,
+    highSeverity: (aggregations.bySeverity?.high || 0) + (aggregations.bySeverity?.critical || 0),
+    toolGaps: aggregations.byGapType?.tool_gap || 0,
+    knowledgeGaps: aggregations.byGapType?.knowledge_gap || 0
   };
 
   return (
@@ -266,7 +280,7 @@ const GapAnalysisPage = () => {
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
                 <Info className="w-4 h-4 inline mr-2" />
-                Showing results for: <span className="font-medium">{queryInfo.filterType.replace('_', ' ')}</span>
+                Showing results for: <span className="font-medium">{queryInfo.filterType ? queryInfo.filterType.replace('_', ' ') : 'default'}</span>
                 {queryInfo.date && ` • Date: ${queryInfo.date}`}
                 {queryInfo.conversationId && ` • Conversation: ${queryInfo.conversationId}`}
               </p>
@@ -289,28 +303,34 @@ const GapAnalysisPage = () => {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Can Automate</p>
-                <p className="text-3xl font-bold text-green-600">{stats.canBeAutomated}</p>
+                <p className="text-sm font-medium text-gray-600">Preventable</p>
+                <p className="text-3xl font-bold text-orange-600">{stats.preventable}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats.total > 0 ? `${Math.round((stats.preventable / stats.total) * 100)}%` : '0%'}
+                </p>
               </div>
-              <Zap className="w-8 h-8 text-green-600" />
+              <AlertTriangle className="w-8 h-8 text-orange-600" />
             </div>
           </div>
           
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">High Severity</p>
-                <p className="text-3xl font-bold text-red-600">{stats.highSeverity}</p>
+                <p className="text-sm font-medium text-gray-600">Legitimate</p>
+                <p className="text-3xl font-bold text-green-600">{stats.legitimate}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats.total > 0 ? `${Math.round((stats.legitimate / stats.total) * 100)}%` : '0%'}
+                </p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
           </div>
           
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Tool Needs</p>
-                <p className="text-3xl font-bold text-purple-600">{stats.toolRequirements}</p>
+                <p className="text-sm font-medium text-gray-600">Tool Gaps</p>
+                <p className="text-3xl font-bold text-purple-600">{stats.toolGaps}</p>
               </div>
               <Settings className="w-8 h-8 text-purple-600" />
             </div>
@@ -320,9 +340,9 @@ const GapAnalysisPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Knowledge Gaps</p>
-                <p className="text-3xl font-bold text-orange-600">{stats.knowledgeGaps}</p>
+                <p className="text-3xl font-bold text-blue-600">{stats.knowledgeGaps}</p>
               </div>
-              <BookOpen className="w-8 h-8 text-orange-600" />
+              <BookOpen className="w-8 h-8 text-blue-600" />
             </div>
           </div>
         </div>
@@ -366,7 +386,7 @@ const GapAnalysisPage = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            openConversation(record.fullRecord?.conversation_url, record.conversationId);
+                            openConversation(null, record.conversationId);
                           }}
                           className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                         >
@@ -374,49 +394,57 @@ const GapAnalysisPage = () => {
                           View Chat
                         </button>
                         
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getSeverityColor(record.severity)}`}>
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getSeverityColor(record.gapSeverity || 'unknown')}`}>
                           <AlertTriangle className="w-3 h-3" />
-                          {record.severity}
+                          {record.gapSeverity || 'unknown'}
                         </div>
                         
                         <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 text-xs font-medium text-gray-700">
                           {getGapTypeIcon(record.gapType)}
-                          {record.gapType.replace('_', ' ')}
+                          {record.gapType ? record.gapType.replace('_', ' ') : 'unknown'}
                         </div>
                       </div>
                       
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{record.userQuery}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{record.userIntent || 'No intent specified'}</h3>
                       
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <Bot className="w-4 h-4" />
-                          {record.originatingAgent}
+                          <Users className="w-4 h-4" />
+                          {record.handoffTeam || 'unknown'}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          {new Date(record.timestamp).toLocaleString()}
+                          {record.timestamp ? new Date(record.timestamp).toLocaleString() : 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Inbox className="w-4 h-4" />
+                          {record.inboxName || 'Unknown'}
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-4 mt-3">
-                        {record.canBeAutomated && (
+                        {record.couldBeAutomated && (
                           <div className="flex items-center gap-1 text-green-600 text-sm">
                             <CheckCircle className="w-4 h-4" />
                             Can be automated
                           </div>
                         )}
                         
-                        {record.knowledgePriority && (
-                          <div className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.knowledgePriority)}`}>
-                            Knowledge: {record.knowledgePriority}
+                        {record.wasHandoffAppropriate ? (
+                          <div className="flex items-center gap-1 text-blue-600 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            Appropriate Handoff
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-orange-600 text-sm">
+                            <XCircle className="w-4 h-4" />
+                            Preventable
                           </div>
                         )}
                         
-                        {record.toolPriority && (
-                          <div className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.toolPriority)}`}>
-                            Tool: {record.toolPriority}
-                          </div>
-                        )}
+                        <div className="text-xs text-gray-500">
+                          Complexity: {record.complexity || 'unknown'}
+                        </div>
                       </div>
                     </div>
                     
@@ -443,66 +471,21 @@ const GapAnalysisPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="font-medium text-gray-700">Primary Intent:</span>
-                            <p className="text-gray-600">{record.fullRecord.user_intent?.primary_intent}</p>
+                            <p className="text-gray-600">{record.intentCategory}</p>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Specific Goal:</span>
-                            <p className="text-gray-600">{record.fullRecord.user_intent?.specific_goal}</p>
+                            <p className="text-gray-600">{record.userIntent}</p>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Complexity:</span>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.fullRecord.user_intent?.complexity_level)}`}>
-                              {record.fullRecord.user_intent?.complexity_level}
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.complexity)}`}>
+                              {record.complexity}
                             </span>
                           </div>
                         </div>
-                        {record.fullRecord.user_intent?.user_context && (
-                          <div className="mt-3 col-span-full">
-                            <span className="font-medium text-gray-700">User Context:</span>
-                            <p className="text-gray-600 text-sm">{record.fullRecord.user_intent.user_context}</p>
-                          </div>
-                        )}
                       </div>
 
-                      {/* Information Completeness */}
-                      <div className="bg-white rounded-lg p-4">
-                        <h4 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                          <Info className="w-5 h-5 text-blue-600" />
-                          Information Completeness
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                          <div>
-                            <span className="text-sm font-medium text-gray-700">Information Available:</span>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                              <div 
-                                className="bg-blue-600 h-2 rounded-full" 
-                                style={{ width: `${(record.fullRecord.information_completeness_analysis?.information_available_score || 0) * 10}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-xs text-gray-600">{record.fullRecord.information_completeness_analysis?.information_available_score}/10</span>
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium text-gray-700">Information Needed:</span>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                              <div 
-                                className="bg-orange-600 h-2 rounded-full" 
-                                style={{ width: `${(record.fullRecord.information_completeness_analysis?.information_needed_score || 0) * 10}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-xs text-gray-600">{record.fullRecord.information_completeness_analysis?.information_needed_score}/10</span>
-                          </div>
-                        </div>
-                        {record.fullRecord.information_completeness_analysis?.critical_missing_pieces && (
-                          <div>
-                            <span className="text-sm font-medium text-gray-700">Critical Missing Pieces:</span>
-                            <ul className="list-disc list-inside text-sm text-gray-600 mt-1">
-                              {record.fullRecord.information_completeness_analysis.critical_missing_pieces.map((piece, index) => (
-                                <li key={index}>{piece}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
 
                       {/* Gap Classification */}
                       <div className="bg-white rounded-lg p-4">
@@ -510,58 +493,14 @@ const GapAnalysisPage = () => {
                           <AlertTriangle className="w-5 h-5 text-red-600" />
                           Gap Classification
                         </h4>
-                        <p className="text-gray-600 text-sm mb-2">{record.fullRecord.gap_classification?.gap_description}</p>
+                        <p className="text-gray-600 text-sm mb-2">{record.gapDescription}</p>
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium border ${getSeverityColor(record.fullRecord.gap_classification?.gap_severity)}`}>
-                            {record.fullRecord.gap_classification?.gap_severity} severity
+                          <span className={`px-2 py-1 rounded text-xs font-medium border ${getSeverityColor(record.gapSeverity)}`}>
+                            {record.gapSeverity} severity
                           </span>
                         </div>
                       </div>
 
-                      {/* Tool Requirements */}
-                      {record.fullRecord.tool_requirement_analysis?.tool_would_help && (
-                        <div className="bg-white rounded-lg p-4">
-                          <h4 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                            <Settings className="w-5 h-5 text-purple-600" />
-                            Suggested Tool: {record.fullRecord.tool_requirement_analysis?.suggested_tool_name}
-                          </h4>
-                          <p className="text-gray-600 text-sm mb-3">{record.fullRecord.tool_requirement_analysis?.tool_purpose}</p>
-                          
-                          {record.fullRecord.tool_requirement_analysis?.information_tool_should_provide?.length > 0 && (
-                            <div className="mb-3">
-                              <span className="text-sm font-medium text-gray-700">Information this tool should provide:</span>
-                              <ul className="list-disc list-inside text-sm text-gray-600 mt-1">
-                                {record.fullRecord.tool_requirement_analysis.information_tool_should_provide.map((info, index) => (
-                                  <li key={index}>{info}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.fullRecord.tool_requirement_analysis?.implementation_priority)}`}>
-                            {record.fullRecord.tool_requirement_analysis?.implementation_priority} priority
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Knowledge Gap */}
-                      {record.fullRecord.knowledge_gap_analysis?.knowledge_gap_exists && (
-                        <div className="bg-white rounded-lg p-4">
-                          <h4 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                            <BookOpen className="w-5 h-5 text-orange-600" />
-                            Knowledge Gap: {record.fullRecord.knowledge_gap_analysis?.missing_knowledge_category}
-                          </h4>
-                          <p className="text-gray-600 text-sm mb-3">{record.fullRecord.knowledge_gap_analysis?.specific_information_needed}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-medium">
-                              {record.fullRecord.knowledge_gap_analysis?.suggested_content_type}
-                            </span>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.fullRecord.knowledge_gap_analysis?.content_priority)}`}>
-                              {record.fullRecord.knowledge_gap_analysis?.content_priority} priority
-                            </span>
-                          </div>
-                        </div>
-                      )}
 
                       {/* Improvement Recommendations */}
                       <div className="bg-white rounded-lg p-4">
@@ -570,33 +509,33 @@ const GapAnalysisPage = () => {
                           Improvement Recommendations
                         </h4>
                         
-                        {record.fullRecord.improvement_recommendations?.immediate_actions?.length > 0 && (
+                        {record.immediateActions?.length > 0 && (
                           <div className="mb-4">
                             <h5 className="text-sm font-medium text-gray-700 mb-2">Immediate Actions:</h5>
                             <ul className="list-disc list-inside text-sm text-gray-600">
-                              {record.fullRecord.improvement_recommendations.immediate_actions.map((action, index) => (
+                              {record.immediateActions.map((action, index) => (
                                 <li key={index}>{action}</li>
                               ))}
                             </ul>
                           </div>
                         )}
                         
-                        {record.fullRecord.improvement_recommendations?.future_tool_development?.length > 0 && (
+                        {record.toolDevelopment?.length > 0 && (
                           <div className="mb-4">
                             <h5 className="text-sm font-medium text-gray-700 mb-2">Future Tool Development:</h5>
                             <ul className="list-disc list-inside text-sm text-gray-600">
-                              {record.fullRecord.improvement_recommendations.future_tool_development.map((tool, index) => (
+                              {record.toolDevelopment.map((tool, index) => (
                                 <li key={index}>{tool}</li>
                               ))}
                             </ul>
                           </div>
                         )}
                         
-                        {record.fullRecord.improvement_recommendations?.knowledge_base_improvements?.length > 0 && (
+                        {record.knowledgeImprovements?.length > 0 && (
                           <div>
                             <h5 className="text-sm font-medium text-gray-700 mb-2">Knowledge Base Improvements:</h5>
                             <ul className="list-disc list-inside text-sm text-gray-600">
-                              {record.fullRecord.improvement_recommendations.knowledge_base_improvements.map((improvement, index) => (
+                              {record.knowledgeImprovements.map((improvement, index) => (
                                 <li key={index}>{improvement}</li>
                               ))}
                             </ul>
@@ -610,10 +549,10 @@ const GapAnalysisPage = () => {
                           <Users className="w-5 h-5 text-indigo-600" />
                           Handoff Assessment
                         </h4>
-                        <p className="text-gray-600 text-sm mb-3">{record.fullRecord.handoff_assessment?.reasoning}</p>
+                        <p className="text-gray-600 text-sm mb-3">{record.reasoning}</p>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
-                            {record.fullRecord.handoff_assessment?.was_handoff_appropriate ? (
+                            {record.wasHandoffAppropriate ? (
                               <CheckCircle className="w-4 h-4 text-green-600" />
                             ) : (
                               <XCircle className="w-4 h-4 text-red-600" />
@@ -621,15 +560,15 @@ const GapAnalysisPage = () => {
                             <span className="text-sm">Handoff Appropriate</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {record.fullRecord.handoff_assessment?.could_be_automated ? (
+                            {record.couldBeAutomated ? (
                               <CheckCircle className="w-4 h-4 text-green-600" />
                             ) : (
                               <XCircle className="w-4 h-4 text-red-600" />
                             )}
                             <span className="text-sm">Could be Automated</span>
                           </div>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.fullRecord.handoff_assessment?.automation_complexity)}`}>
-                            {record.fullRecord.handoff_assessment?.automation_complexity} complexity
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(record.automationComplexity)}`}>
+                            {record.automationComplexity} complexity
                           </span>
                         </div>
                       </div>
@@ -638,6 +577,31 @@ const GapAnalysisPage = () => {
                 )}
               </div>
             ))}
+          </div>
+        )}
+        
+        {/* Pagination */}
+        {totalPages > 1 && !loading && (
+          <div className="mt-6 flex justify-center">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
