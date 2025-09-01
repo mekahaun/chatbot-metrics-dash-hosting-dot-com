@@ -1,7 +1,7 @@
 "use client";
 
 import { AppProvider } from "@/components/context/AppContext";
-import TopMenu from "@/components/Shared/Layout/TopMenu";
+// import TopMenu from "@/components/Shared/Layout/TopMenu";
 import {
   BarChart3,
   LayoutDashboard,
@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }) {
       <div className="flex h-screen w-screen bg-gray-100 overflow-hidden">
         <Sidebar sections={sections} />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <TopMenu sectionName={currentSection?.name} />
+          {/* <TopMenu sectionName={currentSection?.name} /> */}
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
             {children}
           </main>
