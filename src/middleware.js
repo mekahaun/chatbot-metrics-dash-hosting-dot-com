@@ -1,3 +1,5 @@
+// ====== With Auth part ======
+
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
@@ -7,7 +9,7 @@ export default withAuth(
     if (req.nextUrl.pathname === "/" && req.nextauth.token) {
       return NextResponse.redirect(new URL("/dashboard/overview", req.url));
     }
-    
+
     return NextResponse.next();
   },
   {
@@ -27,3 +29,6 @@ export const config = {
     "/dashboard/:path*",
   ],
 };
+
+// ====== Without Auth part ======
+
