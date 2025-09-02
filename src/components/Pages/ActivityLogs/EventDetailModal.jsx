@@ -795,9 +795,11 @@ const EventDetailModal = ({ event, onClose }) => {
                 {event.user_messages.map((msg, index) => (
                   <div key={index} className="bg-blue-50 rounded-lg p-3">
                     <p className="text-sm text-gray-800">{msg.content}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {format(parseISO(msg.timestamp), "HH:mm:ss")}
-                    </p>
+                    {msg.timestamp && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {format(parseISO(msg.timestamp), "HH:mm:ss")}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1221,7 +1223,7 @@ const EventDetailModal = ({ event, onClose }) => {
                               
                               // Add line numbers
                               const content = document.getElementById('logContent');
-                              const lines = content.textContent.split('\\n');
+                              const lines = content.textContent?.split('\\n');
                               const numberedLines = lines.map((line, i) => 
                                 '<span class="line-number">' + String(i + 1).padStart(4, ' ') + '</span>' + line
                               ).join('\\n');
