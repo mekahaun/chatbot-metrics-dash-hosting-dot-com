@@ -30,11 +30,11 @@ const sections = [
     name: "Gap Analysis",
     icon: <BarChart3 size={18} />,
   },
-  {
-    id: "system-control",
-    name: "System Control",
-    icon: <Settings size={18} />,
-  },
+  // {
+  //   id: "system-control",
+  //   name: "System Control",
+  //   icon: <Settings size={18} />,
+  // },
 ];
 
 export default function DashboardLayout({ children }) {
