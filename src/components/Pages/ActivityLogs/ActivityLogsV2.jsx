@@ -301,6 +301,7 @@ const ActivityLogsV2 = () => {
             {expandedConversation === `${activity.conversation_id}-${activity.SK}` && (
               <ConversationTimeline
                 conversationId={activity.conversation_id}
+                accountId={activity.account_id || 2}
                 onEventClick={handleEventClick}
               />
             )}

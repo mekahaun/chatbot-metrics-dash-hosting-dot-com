@@ -133,7 +133,7 @@ const getMessageTypeInfo = (message) => {
   };
 };
 
-const ConversationTimeline = ({ conversationId, onEventClick }) => {
+const ConversationTimeline = ({ conversationId, accountId = 2, onEventClick }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
@@ -183,7 +183,7 @@ const ConversationTimeline = ({ conversationId, onEventClick }) => {
   
   const fetchChatHistory = async () => {
     try {
-      const endpoint = getFullUrl(`/chat-history?conversationId=${conversationId}`);
+      const endpoint = getFullUrl(`/chat-history?conversationId=${conversationId}&accountId=${accountId}`);
       const response = await fetch(endpoint);
       
       if (!response.ok) {
