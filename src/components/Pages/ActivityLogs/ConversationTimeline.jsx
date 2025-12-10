@@ -183,7 +183,7 @@ const ConversationTimeline = ({ conversationId, accountId = 2, onEventClick }) =
   
   const fetchChatHistory = async () => {
     try {
-      const endpoint = getFullUrl(`/chat-history?conversationId=${conversationId}&accountId=${accountId}`);
+      const endpoint = getFullUrl(`/chat-history?conversationId=${conversationId}&accountId=${accountId || 2}`);
       const response = await fetch(endpoint);
       
       if (!response.ok) {
