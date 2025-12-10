@@ -135,10 +135,10 @@ const ActivityLogsV2 = () => {
     setExpandedConversation(expandedConversation === expandKey ? null : expandKey);
   };
 
-  const handleEventClick = async (conversationId, eventSK, accountId) => {
+  const handleEventClick = async (conversationId, eventSK, accountId = 2) => {
     try {
       const endpoint = getFullUrl(
-        `${getRoutes().activityDetailApiPath}?conversationId=${conversationId}&activitySK=${encodeURIComponent(eventSK)}&accountId=${accountId}`
+        `${getRoutes().activityDetailApiPath}?conversationId=${conversationId}&activitySK=${encodeURIComponent(eventSK)}&accountId=${accountId || 2}`
       );
       const response = await fetch(endpoint);
       

@@ -76,11 +76,11 @@ export const useActivityLogs = (timePeriod) => {
     }
   };
 
-  const fetchLogDetails = async (expandedLogVal, accountId) => {
+  const fetchLogDetails = async (expandedLogVal, accountId = 2) => {
     const conversationId = expandedLogVal.split("______")[1];
     try {
       const endpoint = getFullUrl(
-        `${activityDetailApiPath}?conversationId=${conversationId}&accountId=${accountId}`
+        `${activityDetailApiPath}?conversationId=${conversationId}&accountId=${accountId || 2}`
       );
       const response = await fetch(endpoint);
 
