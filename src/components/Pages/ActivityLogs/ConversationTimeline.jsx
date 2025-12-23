@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   User,
   Image,
+  Pencil,
 } from "lucide-react";
 import { getFullUrl, getRoutes } from "@/utils";
 import LoadingSection from "@/components/Shared/Common/Loaders/LoadingSection";
@@ -133,12 +134,124 @@ const getMessageTypeInfo = (message) => {
   };
 };
 
+// Build a mapping of bot messages to events using timestamp proximity matching
+// Multiple bot messages can map to the same event (AI can send multiple messages per event)
+const buildMessageEventMapping = (chatHistory, events) => {
+  const mapping = new Map(); // messageId -> event
+
+  // Filter to events that represent AI responses
+  // - messagesProcessed: regular AI responses
+  // - handoffOccurred: AI handoff messages (e.g., "I'm transferring you to an agent")
+  // - silent_handoff_occurred: silent handoff events
+  const responseEvents = events.filter(e =>
+    e.event_code === 'messagesProcessed' ||
+    e.event_code === 'handoffOccurred' ||
+    e.event_code === 'silent_handoff_occurred'
+  );
+
+  // Get all bot/outgoing messages sorted by timestamp (oldest first)
+  const botMessages = chatHistory
+    .filter(m => {
+      if (m.message_type !== 1) return false;
+      if (m.private) return false;
+      const senderType = m.sender?.type?.toLowerCase() || '';
+      return senderType === 'agent_bot' || senderType === 'bot' || senderType.includes('bot');
+    })
+    .sort((a, b) => a.created_at - b.created_at);
+
+  // Sort events by timestamp (oldest first)
+  const sortedEvents = [...responseEvents].sort((a, b) =>
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+
+  // Debug logging
+  console.log('[Message-Event Mapping Debug]', {
+    totalChatMessages: chatHistory.length,
+    botMessagesCount: botMessages.length,
+    responseEventsCount: sortedEvents.length,
+    botMessages: botMessages.map(m => ({
+      id: m.id,
+      sender: m.sender?.type,
+      time: new Date(m.created_at * 1000).toISOString()
+    })),
+    events: sortedEvents.map(e => ({ SK: e.SK, code: e.event_code, time: e.timestamp }))
+  });
+
+  if (responseEvents.length === 0) {
+    console.log('[Mapping] No response events found (messagesProcessed, handoffOccurred, etc.)');
+    return mapping;
+  }
+
+  // For each bot message, find the best matching event by timestamp proximity
+  // The event timestamp should be close to or slightly before the bot message timestamp
+  // (event is created during processing, message is sent after)
+  for (const botMsg of botMessages) {
+    const botMsgTime = botMsg.created_at * 1000; // Convert to milliseconds
+
+    let bestEvent = null;
+    let bestTimeDiff = Infinity;
+
+    for (const event of sortedEvents) {
+      const eventTime = new Date(event.timestamp).getTime();
+
+      // Event should be within 60 seconds BEFORE or 10 seconds AFTER the bot message
+      // (processing happens, then message is sent)
+      const timeDiff = botMsgTime - eventTime;
+
+      // Valid range: event is 0-60 seconds before the message, or up to 10 seconds after
+      if (timeDiff >= -10000 && timeDiff <= 60000) {
+        if (Math.abs(timeDiff) < bestTimeDiff) {
+          bestTimeDiff = Math.abs(timeDiff);
+          bestEvent = event;
+        }
+      }
+    }
+
+    if (bestEvent) {
+      mapping.set(botMsg.id, bestEvent);
+    }
+  }
+
+  console.log('[Mapping Result]', {
+    mappedCount: mapping.size,
+    unmappedBotMessages: botMessages.length - mapping.size,
+    mappings: Array.from(mapping.entries()).map(([msgId, event]) => ({
+      messageId: msgId,
+      eventSK: event.SK
+    }))
+  });
+
+  return mapping;
+};
+
+// Simple lookup function that uses pre-built mapping
+const findMatchingEventForMessage = (message, messageEventMap) => {
+  // Must be outgoing message
+  if (message.message_type !== 1) return null;
+  // Must not be private
+  if (message.private) return null;
+  // Check if it's from a bot
+  const senderType = message.sender?.type?.toLowerCase() || '';
+  const isBot = senderType === 'agent_bot' || senderType === 'bot' || senderType.includes('bot');
+  if (!isBot) return null;
+
+  return messageEventMap.get(message.id) || null;
+};
+
 const ConversationTimeline = ({ conversationId, accountId = 2, onEventClick }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);
   const [error, setError] = useState(null);
   const [showChat, setShowChat] = useState(false);
+
+  // Build message-to-event mapping once when data changes
+  const messageEventMap = useMemo(() => {
+    if (chatHistory.length === 0 || events.length === 0) {
+      return new Map();
+    }
+    return buildMessageEventMapping(chatHistory, events);
+  }, [chatHistory, events]);
 
   useEffect(() => {
     fetchConversationEvents();
@@ -347,17 +460,38 @@ const ConversationTimeline = ({ conversationId, accountId = 2, onEventClick }) =
                 <div className="space-y-4">
                   {chatHistory.map((message) => {
                     const messageInfo = getMessageTypeInfo(message);
-                    const isImage = message.attachments && message.attachments.length > 0 && 
+                    const isImage = message.attachments && message.attachments.length > 0 &&
                                    message.attachments[0].file_type === 'image';
-                    
+
+                    // Find matching event for bot messages using pre-built mapping
+                    // Check if this is a bot message (outgoing, non-private, from bot sender)
+                    const senderType = message.sender?.type?.toLowerCase() || '';
+                    const isBotMessage = message.message_type === 1 &&
+                      !message.private &&
+                      (senderType === 'agent_bot' || senderType === 'bot' || senderType.includes('bot'));
+                    const matchingEvent = isBotMessage
+                      ? findMatchingEventForMessage(message, messageEventMap)
+                      : null;
+
                     return (
                       <div
                         key={message.id}
                         className="group"
                       >
-                        <div className={`rounded-lg p-4 ${messageInfo.bgColor} ${messageInfo.borderColor} border backdrop-blur-sm`}>
+                        <div className={`rounded-lg p-4 ${messageInfo.bgColor} ${messageInfo.borderColor} border backdrop-blur-sm relative`}>
+                          {/* Pencil icon for bot messages with matching event */}
+                          {isBotMessage && matchingEvent && (
+                            <button
+                              onClick={() => onEventClick(conversationId, matchingEvent.SK)}
+                              className="absolute top-2 right-2 p-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-sm"
+                              title="View event details for this response"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
                           {/* Message Header */}
-                          <div className="flex items-center justify-between mb-2">
+                          <div className={`flex items-center justify-between mb-2 ${isBotMessage && matchingEvent ? 'pr-10' : ''}`}>
                             <div className="flex items-center space-x-2">
                               <div className={`${messageInfo.labelColor}`}>
                                 {messageInfo.icon}
